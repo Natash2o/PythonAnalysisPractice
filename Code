@@ -1,0 +1,576 @@
+
+#Used iPython Notebook. Layout of comments are original, modification of code and going through learning bit by bit- By me!
+
+import unicodecsv #unicodecsv from library to read in csv for student enrollments
+
+
+enrollments = []   #created list of enrollments
+f = open('enrollments.csv', 'rb') #open file, rb: r- file open for reading, b- changes format of how file is read
+reader = unicodecsv.DictReader(f) #DictReader- each row will be a dictionary
+
+for row in reader:
+    enrollments.append(row) #appends each row to a list
+    
+f.close() #closes file
+
+enrollments[0] 
+
+with open('enrollments.csv', 'rb') as f:
+    reader = unicodecsv.DictReader(f)
+    enrollments=list(reader)
+    
+enrollments[0]
+
+with open('daily_engagement.csv', 'rb') as f:
+    reader=unicodecsv.DictReader(f)
+    daily_engagement=list(reader)
+    
+daily_engagement[0]
+
+with open ('project_submissions.csv', 'rb') as f:
+    reader=unicodecsv.DictReader(f)
+    project_submissions=list(reader)
+    
+project_submissions[0]
+
+# Iterators https://www.codementor.io/python/tutorial/python-generators-and-iterators
+
+def read_csv(filename):
+    with open(filename, 'rb') as f:
+        reader = unicodecsv.DictReader(f)
+        return list(reader)
+
+enrollments = read_csv('enrollments.csv')
+daily_engagement = read_csv('daily_engagement.csv')
+project_submissions = read_csv('project_submissions.csv')
+
+
+print enrollments[0]
+print daily_engagement[0]
+print project_submissions[0] #print on all 3 since cells only print last line and we want all outputs
+
+enrollments[0]
+
+
+daily_engagement[0]
+
+project_submissions[0]
+
+from datetime import datetime as dt
+
+# Takes a date as a string, and returns a Python datetime object. 
+# If there is no date given, returns None
+def parse_date(date):
+    if date == '':     #first check to see if date is the empty string
+        return None    # in which case returns none, cancel string could be empty string if student hasn't canceled yet
+    else:
+        return dt.strptime(date, '%Y-%m-%d') #use strptime function to parse string to convert to date time
+    #helped convert cancel date to cancel date python object
+    
+# Takes a string which is either an empty string or represents an integer,
+# and returns an int or None.
+def parse_maybe_int(i): #for days_to_cancel, might not be an integer if student hasn't canceled yet
+    if i == '':      #will return none if sting is empty
+        return None
+    else:
+        return int(i)  #or else will cast argument an integer value
+
+# Clean up the data types in the enrollments table
+#main loop for enrollments data. did not update account key because account key looked like an integer
+#and never going to add together account keys, so just keep as string.
+for enrollment in enrollments:
+    enrollment['cancel_date'] = parse_date(enrollment['cancel_date']) #cancel date to cancel date python object
+    enrollment['days_to_cancel'] = parse_maybe_int(enrollment['days_to_cancel']) #might be int, might not be
+    enrollment['is_canceled'] = enrollment['is_canceled'] == 'True' #check to see if is_canceled is equal to True, false otherwise
+    enrollment['is_udacity'] = enrollment['is_udacity'] == 'True'
+    enrollment['join_date'] = parse_date(enrollment['join_date'])
+    
+enrollments[0]
+
+# Clean up the data types in the engagement table
+for engagement_record in daily_engagement:
+    engagement_record['lessons_completed'] = int(float(engagement_record['lessons_completed']))
+    engagement_record['num_courses_visited'] = int(float(engagement_record['num_courses_visited']))
+    engagement_record['projects_completed'] = int(float(engagement_record['projects_completed']))
+    engagement_record['total_minutes_visited'] = float(engagement_record['total_minutes_visited'])
+    engagement_record['utc_date'] = parse_date(engagement_record['utc_date'])
+    
+daily_engagement[0]
+
+#cast number to float first then to an int
+#0.0 because of decimal point directly converting this string to an integer would fail. logically should be an integer. 
+#if you complete half a lesson, you would be logged as 0 and not 0.5
+
+# Clean up the data types in the submissions table
+for submission in project_submissions:
+    submission['completion_date'] = parse_date(submission['completion_date'])
+    submission['creation_date'] = parse_date(submission['creation_date'])
+
+project_submissions[0]
+
+
+#cleaning up helps for updating data types throughout analyzation of your data. all represented as strings prior because a csv
+#does not try to detect which type each column has. up to you to convert data types if you'd like. could convert later
+#when you need to but better to convert earlier so no need to worry later.
+
+#Problem 2- Modify list rather than create new list, deletes acct
+for engagement_record in daily_engagement:    #looped over daily_engagement table
+    engagement_record['account_key'] = engagement_record['acct'] #created a new key, account_key and set equal to existing acct
+    del[engagement_record['acct']] #deletes acct
+    
+#http://stackoverflow.com/questions/5844672/delete-an-element-from-a-dictionary
+
+def get_unique_students(data):   #creates a function get_unique students with argument data
+    unique_students=set()  #creating empty set
+    for data_point in data:  #loop over data
+        unique_students.add(data_point["account_key"]) #then adding each account key to the set
+    return unique_students
+
+
+
+unique_enrolled_students = get_unique_students(enrollments)
+
+
+
+unique_engagement_students = get_unique_students(daily_engagement)
+
+
+unique_project_submitters = get_unique_students(project_submissions)
+
+
+print len(enrollments)
+print len(unique_enrolled_students)
+
+print len(daily_engagement)
+print len(unique_engagement_students)
+
+print len(project_submissions)
+print len(unique_project_submitters)
+
+enrollment_num_rows = 0             
+enrollment_num_unique_students = 0 
+
+engagement_num_rows = 0             
+engagement_num_unique_students = 0  
+
+submission_num_rows = 0             
+submission_num_unique_students = 0  
+
+
+unique_enrolled_students = set()    #creates empty set
+for enrollment in enrollments:      #loops through enrollments
+    unique_enrolled_students.add(enrollment['account_key'])  #adds account key from each enrollment for this set
+
+
+unique_engagement_students = set()
+for engagement_record in daily_engagement:
+    unique_engagement_students.add(engagement_record['acct'])
+
+unique_project_submitters = set()
+for submission in project_submissions:
+    unique_project_submitters.add(submission['account_key'])
+
+
+print len(enrollments)
+print len(unique_enrolled_students)         #gives up number of rows in each table
+print len(daily_engagement)
+print len(unique_engagement_students)
+print len(project_submissions)
+print len(unique_project_submitters) #this block will not work since updated acct to account key
+
+
+# reason enrollments and unique enrollments are different are that students can enroll, cancel then re-enroll later
+# daily_engagement- makes sense since there should be multiple entries for each student
+#why are enrollments and unique_engagement_students different?
+
+#Problems in Data:
+
+#1: More unique students in enrollment than engagement table.
+#Fix:? Join date and Cancel date are same and days to cancel=0. This can explain why there is no record
+#in the engagement table. Student needs to be enrolled for an entire day before student is recorded.
+
+#2: Column named account_key in two tables and acct in the third.
+#Fix: Change column from acct to acct_key. 
+
+daily_engagement[0]['account_key']
+
+#Problem 2-http://www.tutorialspoint.com/python/python_break_statement.htm
+#The join data and cancel date are the same and days to cancel are equal to 0. 
+#This can explain why there is no record in the engagement table. 
+#The student also probably needs to be enrolled for more than a day
+
+for enrollment in enrollments:   #looped over enrollments
+    student = enrollment['account_key']  #finds account key for each enrollment
+    if student not in unique_engagement_students: #finds if account key is in unique_engagement_students from earlier
+        print enrollment
+        break  #exits loop
+        
+  #saw that a student has canceled within one day of joining, not a problem and explains why student is missing from engagement table.
+#depending on analysis later, may want to exclude students like this or need to know they exist 
+#in case they cause an edge case in code
+
+num_problem_students = 0  #set variable =0
+for enrollment in enrollments:  #looped through enrollments
+    student = enrollment['account_key']  #account key for each student
+    if (student not in unique_engagement_students and        #checks if join date = cancel date
+            enrollment['join_date'] != enrollment['cancel_date']):
+        print enrollment
+        num_problem_students += 1  #missing student for which dates are not =0, add 1
+
+num_problem_students
+
+#How many suprising enrollments are left? 3
+
+
+#tells us these students are udacity test accounts, need to exclude these from analysis.
+
+udacity_test_accounts=set() 
+for enrollment in enrollments: #loop through enrollments
+    if enrollment['is_udacity']:
+        udacity_test_accounts.add(enrollment['account_key'])  #add account key for enrollment of is_udacity value
+len(udacity_test_accounts)
+
+
+#to exclude udacity test accounts
+
+def remove_udacity_accounts(data):  #define a function remove_udacity_accounts with arg data
+    non_udacity_data= []  #empty set non_udacity_data
+    for data_point in data:    #loop through data_point
+        if data_point['account_key'] not in udacity_test_accounts: #if account key for data_point not in udacity test accounts
+            non_udacity_data.append(data_point)  #then add  the data_point account key to non_udacity_data
+    return non_udacity_data
+    
+non_udacity_enrollments= remove_udacity_accounts(enrollments)  #saved variables to be run into the remove_udacity_accounts function
+non_udacity_engagement= remove_udacity_accounts(daily_engagement)
+non_udacity_submissions= remove_udacity_accounts(project_submissions)
+
+print len(non_udacity_enrollments)
+print len(non_udacity_engagement)    #called function on 3 tables and checked how many records in each
+print len(non_udacity_submissions)   #saved in new variable names in case want to check old data again
+
+#dictionary created of students who either haven't canceled yet or stayed enrolled more than 7 days.
+#days_to_cancel is None, days_to_cancel >7
+#http://stackoverflow.com/questions/13960657/does-python-evaluate-ifs-conditions-lazily
+
+paid_students = {}     #create empty dictionary
+for enrollment in non_udacity_enrollments:  #loop through enrollments, new enrollments variable
+    if (not enrollment['is_canceled'] or
+            enrollment['days_to_cancel'] > 7):  #if student hasn't canceled or was more than 7 days before they did cancel
+        account_key = enrollment['account_key'] 
+        enrollment_date = enrollment['join_date'] #account key and enrollment_date saved into variables
+        if (account_key not in paid_students or
+                enrollment_date > paid_students[account_key]):
+            paid_students[account_key] = enrollment_date #add account key as key and enrollment_date as the value
+
+len(paid_students)
+
+# Takes a student's join date and the date of a specific engagement record,
+# and returns True if that engagement record happened within one week
+# of the student joining.
+def within_one_week(join_date, engagement_date):  #defined function naed within_one_week which takes two args- join_date
+    time_delta = engagement_date - join_date      #and engagement_date 
+    return time_delta.days < 7                    
+#where time_delta is a variable that is the difference between two args and gives us how much engagement has happened within 7 days
+
+#fix bug, returns days that are greater than or equal to 0 and less than 7 days.
+def within_one_week(join_date, engagement_date):
+    time_delta = engagement_date - join_date
+    return time_delta.days >= 0 and time_delta.days < 7
+    
+#removes students who canceled during free trial
+def remove_free_trial_cancels(data):  #def remove_free_trial_cancels function with arg data
+    new_data = []  #empty set called new_data
+    for data_point in data:   #looped through data
+        if data_point['account_key'] in paid_students:   
+            new_data.append(data_point)    #add new data to data_point account key for paid_students
+    return new_data
+
+paid_enrollments = remove_free_trial_cancels(non_udacity_enrollments)
+paid_engagement = remove_free_trial_cancels(non_udacity_engagement)
+paid_submissions = remove_free_trial_cancels(non_udacity_submissions)
+
+print len(paid_enrollments)
+print len(paid_engagement)
+print len(paid_submissions)
+
+#created has_visited field either 1 or 0 to analyze num_courses, added this then ran all cells below
+#in addition to In [41]
+for engagement_record in paid_engagement:  #looped through engagement record in paid_engagement table
+    if engagement_record['num_courses_visited'] > 0: #if courses visited greater than 0
+        engagement_record['has_visited'] = 1 #then has_visited is set to equal to 1
+    else:
+        engagement_record['has_visited'] = 0 #else if not greater than 0, set to equal to 0
+        
+#0's and 1's making this numeric to add up number of courses student has visited to get total number of days student visited classroom
+
+paid_engagement_in_first_week = []  #empty set for paid_engagement_in_first_week
+for engagement_record in paid_engagement:   #looped through paid_engagement
+    account_key = engagement_record['account_key'] #account key for engagement record
+    join_date = paid_students[account_key]  #join date account key for paid students
+    engagement_record_date = engagement_record['utc_date'] #
+
+    if within_one_week(join_date, engagement_record_date):  
+        paid_engagement_in_first_week.append(engagement_record)
+
+len(paid_engagement_in_first_week)
+
+from collections import defaultdict
+
+# Create a dictionary of engagement grouped by student.
+# The keys are account keys, and the values are lists of engagement records.
+engagement_by_account = defaultdict(list)  
+for engagement_record in paid_engagement_in_first_week: #looped through each engagement record
+    account_key = engagement_record['account_key']
+    engagement_by_account[account_key].append(engagement_record) #looks up egagement records for that account key variable
+    
+#defaultdict comes in handy because if you never added account key for engagement records then would have gotten an empty list
+#then add engagement record to the list of engagement records for that account key
+    
+#defaultdict allows you to specify a default value, specified 'list' means that if you every try to look up a key in the dictionary
+#and that key is not there, you get an empty list instead.
+
+
+total_minutes_by_account = {} #dictionary of total minutes each student spent engaged
+for account_key, engagement_for_student in engagement_by_account.items(): #looped over dictionary created previously
+    total_minutes = 0 #set total minutes =0 since each account starts at 0.items ^ gives you key and value for each entry in dictionary
+    for engagement_record in engagement_for_student: #looped through engagement record
+        total_minutes += engagement_record['total_minutes_visited'] #added total minutes started to engagement of total minutes visited
+    total_minutes_by_account[account_key] = total_minutes #store that number of minutes under total minutes by account key in new dictionary
+    
+    
+import numpy as np  #can refer to numpy later as np
+
+# Summarize the data about minutes spent in the classroom
+total_minutes = total_minutes_by_account.values()  #.values just to get values from total_minutes_by_account dictionary
+print 'Mean:', np.mean(total_minutes) #average minutes spent
+print 'Standard deviation:', np.std(total_minutes)
+print 'Minimum:', np.min(total_minutes)
+print 'Maximum:', np.max(total_minutes) #max minutes > max minutes in 1 week, something may be wrong.  
+
+
+#to find which student had the initial error maximum of over 10,500 minutes
+student_with_max_minutes = None #initialize student_with_max_minutes to be none
+max_minutes = 0 #set max_minutes =0
+
+for student, total_minutes in total_minutes_by_account.items(): #looped over each student and the total minutes spent
+    if total_minutes > max_minutes: #if total minutes exceeds max minutes
+        max_minutes = total_minutes #max minutes and student with max amount of minutes is equal to this student
+        student_with_max_minutes = student 
+
+max_minutes  #after bug fixed 3564.7332644989997 ~= 60 hours. thats a lot! but possible
+
+
+for engagement_record in paid_engagement_in_first_week:
+    if engagement_record['account_key'] == student_with_max_minutes:
+        print engagement_record #now gives us 7 entries after bug fix for engagement of this student issue
+        
+
+from collections import defaultdict
+
+
+#first function to group records by account key
+def group_data(data, key_name): #function named group_data with 2 args data and key name where key name indicated which to group by
+    grouped_data = defaultdict(list)
+    for data_point in data: #looped data_point through data
+        key = data_point[key_name]
+        grouped_data[key].append(data_point)
+    return grouped_data #returned grouped_data variable
+
+engagement_by_account = group_data(paid_engagement_in_first_week,
+                                   'account_key')
+                                   
+        
+        
+#second function to sum up all the entries for each account key
+def sum_grouped_items(grouped_data, field_name): #function sum_grouped_items with 2 args grouped_data and field_name
+    summed_data = {} #summed_data in dictionary  #field_name needed to be an argument b/c we wanted to sum up total minutes visited and lessons completed
+    for key, data_points in grouped_data.items(): #looped key and data_points in grouped_data, .items for both
+        total = 0 #set total equal to 0
+        for data_point in data_points:
+            total += data_point[field_name] #inpt field_name
+        summed_data[key] = total #generic variable names
+    return summed_data
+
+total_minutes_by_account = sum_grouped_items(engagement_by_account,
+                                             'total_minutes_visited')
+                                             
+
+import numpy as np
+
+#third function to print out summary of statistics
+def describe_data(data): #one arg data to describe_data function
+    print 'Mean:', np.mean(data)
+    print 'Standard deviation:', np.std(data)
+    print 'Minimum:', np.min(data)
+    print 'Maximum:', np.max(data)
+
+describe_data(total_minutes_by_account.values()) #described total minutes data
+
+
+#analyzes lessons completed by account using 3 functions just written
+lessons_completed_by_account = sum_grouped_items(engagement_by_account,
+                                                 'lessons_completed') #sum_grouped_items, summed up each lessons_completed for each account key
+describe_data(lessons_completed_by_account.values())  #called describe_data function and took .values() of lessons_completed_by_account dictionary
+                                                    #before putting into function
+    
+#mean/std dev.makes sense for variations since some students would complete a lot more lessons in the first week of class than others
+#Min=0 which is not surprising, some students wouldn't complete any lessons in first week
+#Max- 36 lessons completed in first week, wowza!
+
+
+#to analyze num_courses_visited, either change sum_grouped_items function or create a field has_visited which is either 1 or 0
+
+#created has_visited field, moved up to In [30], then run all cells below it for this to give summary statistics
+days_visited_by_account = sum_grouped_items(engagement_by_account,
+                                            'has_visited')  #to analyze days visited by account, sum of group of items of has_visited 
+describe_data(days_visited_by_account.values())             #in each account for engagement data grouped by account
+
+#mean is a little less than 3
+#std. dev
+#min and max are of expected, minimum 0 days visited and maximum student visited every single day that week
+
+
+## Create two lists of engagement data for paid students in the first week.
+## The first list should contain data for students who eventually pass the
+## subway project, and the second list should contain data for students
+## who do not.
+
+subway_project_lesson_keys = ['746169184', '3176718735']
+
+pass_subway_project = set()
+
+for submission in paid_submissions:  #looped over each submission in paid submissions which contains all project submissions from students analyzing
+    project = submission['lesson_key']
+    rating = submission['assigned_rating']  #project key and rating for project
+    
+    if ((project in subway_project_lesson_keys) and
+            (rating == 'PASSED' or rating == 'DISTINCTION')): #condition added for rating equal to passed or rating equal to distinction
+        pass_subway_project.add(submission['account_key'])
+
+len(pass_subway_project)
+
+
+paid_submissions[0]
+
+
+passing_engagement = []
+non_passing_engagement = []  #set each to empty list
+
+for engagement_record in paid_engagement_in_first_week:  #looped over each engagement_record
+    if engagement_record['account_key'] in pass_subway_project:  #checked to see if engagement record act key has passed subway project
+        passing_engagement.append(engagement_record) #then added this engagement record as passing
+    else:
+        non_passing_engagement.append(engagement_record) #or else added non passing engagement record 
+
+print len(passing_engagement)
+print len(non_passing_engagement)
+
+passing_engagement_by_account = group_data(passing_engagement,
+                                           'account_key')
+non_passing_engagement_by_account = group_data(non_passing_engagement,
+                                               'account_key')
+                                               
+                                               
+  print 'non-passing students:'
+non_passing_minutes = sum_grouped_items(
+    non_passing_engagement_by_account,
+    'total_minutes_visited'
+)
+describe_data(non_passing_minutes.values())
+
+print 'passing students:'
+passing_minutes = sum_grouped_items(
+    passing_engagement_by_account,
+    'total_minutes_visited'
+)
+describe_data(passing_minutes.values())
+
+#Passing students spend more than half the time in minutes on the site than non-passing students.
+
+
+print 'non-passing students:'
+non_passing_lessons = sum_grouped_items(
+    non_passing_engagement_by_account,
+    'lessons_completed'
+)
+describe_data(non_passing_lessons.values())
+
+print 'passing students:'
+passing_lessons = sum_grouped_items(
+    passing_engagement_by_account,
+    'lessons_completed'
+)
+describe_data(passing_lessons.values())
+
+#Non-passing students on average didn't complete 1 lesson where passing students completed about 2 lessons.
+
+print 'non-passing students:'
+non_passing_visits = sum_grouped_items(
+    non_passing_engagement_by_account, 
+    'has_visited'
+)
+describe_data(non_passing_visits.values())
+
+print 'passing students:'
+passing_visits = sum_grouped_items(
+    passing_engagement_by_account,
+    'has_visited'
+)
+describe_data(passing_visits.values())
+
+#The mean and standard deviation are really similar for non-passing students.
+
+
+
+%pylab inline
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Summarize the given data
+def describe_data(data):
+    print 'Mean:', np.mean(data)
+    print 'Standard deviation:', np.std(data)
+    print 'Minimum:', np.min(data)
+    print 'Maximum:', np.max(data)
+    plt.hist(data)
+    
+    
+    
+nonpass_minutes= non_passing_minutes.values()
+print describe_data(nonpass_minutes)
+
+pass_minutes= passing_minutes.values()
+print describe_data(pass_minutes)
+
+nonpass_lessons= non_passing_lessons.values()
+print describe_data(nonpass_lessons)
+
+pass_lessons= passing_lessons.values()
+print describe_data(pass_lessons)
+
+nonpass_visits= non_passing_visits.values()
+print describe_data(nonpass_visits)
+
+pass_visits= passing_visits.values()
+print describe_data(pass_visits)
+
+import seaborn as sns
+pass_visits= passing_visits.values()
+print describe_data(pass_visits)
+
+plt.xlabel("Number of Days in First Week")
+plt.ylabel("Number of visits")
+plt.title("Passed Students for SubWay Project-Number of Visits")
+
+plt.hist(non_passing_visits.values(), bins=8)
+plt.xlabel('Number of days')
+plt.title('Distribution of classroom visits in the first week ' + 
+          'for students who do not pass the subway project')
+          
+plt.hist(passing_visits.values(), bins=8) #8 to fill in spaces from earlier, there are 8 options
+plt.xlabel('Number of days')
+plt.title('Distribution of classroom visits in the first week ' + 
+          'for students who pass the subway project')
+    
+    
