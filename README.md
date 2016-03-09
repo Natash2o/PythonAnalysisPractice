@@ -1,5 +1,5 @@
 # PythonAnalysisPractice <br>
-Udacity Practice with Comment Note- <br>
+Udacity Practice with Comment Notes- <br>
 Analyzed data of students who took Intro to Data Analysis course through Udacity. <br>
 Looked at:<br>
     -looked at first week of class<br>
